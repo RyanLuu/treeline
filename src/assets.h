@@ -17,10 +17,11 @@ class Assets {
         unsigned int load(const std::string &filepath);
         std::shared_ptr<T> get(unsigned int id);
         void unload(unsigned int id);
+        void unloadAll();
     private:
         std::unordered_map<unsigned int, std::shared_ptr<T>> m_resources;
         unsigned int m_currentId;
 };
 
-#include "assets.tpp"
+#include "assets.ipp"
 

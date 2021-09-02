@@ -8,7 +8,7 @@
 
 class RenderSystem : public System {
     public:
-        void update(unsigned int dt) override {
+        void update(double dt) override {
             for (Entity entity : m_entities) {
                 CSprite &sprite = g_ecs.getComponent<CSprite>(entity);
                 std::shared_ptr<Texture> t = g_textures.get(sprite.textureId);
@@ -17,7 +17,7 @@ class RenderSystem : public System {
                 rect.x = (int) translation.x;
                 rect.y = (int) translation.y;
                 rect.w = sprite.width.value_or(t->m_w);
-                rect.h = sprite.width.value_or(t->m_h);
+                rect.h = sprite.height.value_or(t->m_h);
                 SDL_RenderCopy(g_renderer, t->m_img, nullptr, &rect);
             }
         }

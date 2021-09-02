@@ -5,11 +5,11 @@
 #include <cstdint>
 #include <memory>
 #include <queue>
-#include <set>
+#include <unordered_set>
 #include <string>
 #include <unordered_map>
 
-using Entity = std::uint32_t;
+using Entity = std::uint16_t;
 const size_t MAX_ENTITIES = 4096;
 
 using Component = std::uint8_t;
@@ -73,8 +73,8 @@ class ComponentManager {
 class System {
     public:
         virtual ~System() = default;
-        std::set<Entity> m_entities;
-        virtual void update(unsigned int dt) = 0;
+        std::unordered_set<Entity> m_entities;
+        virtual void update(double dt) = 0;
 };
 
 class SystemManager {
@@ -83,7 +83,7 @@ class SystemManager {
         template<typename T> void setArchetype(Archetype archetype);
         void notifyDestroyed(Entity e);
         void notifyChanged(Entity e, Archetype archetype);
-        void update(unsigned int dt);
+        void update(double dt);
     private:
         std::unordered_map<std::shared_ptr<System>, Archetype> m_systems;
 };
@@ -102,14 +102,15 @@ class ECS {
         template<typename T> Component getComponentId();
         template<typename T> std::shared_ptr<T> registerSystem(Archetype archetype = Archetype{});
         template<typename T> void setSystemArchetype(Archetype archetype);
-        void updateSystems(unsigned int dt);
+        void updateSystems(double dt);
     private:
         std::unique_ptr<EntityManager> m_entityManager;
         std::unique_ptr<ComponentManager> m_componentManager;
         std::unique_ptr<SystemManager> m_systemManager;
+        std::unordered_set<Entity> m_destroyList;
 };
 
 extern ECS g_ecs;
 
-#include "ecs.tpp"
+#include "ecs.ipp"
 
