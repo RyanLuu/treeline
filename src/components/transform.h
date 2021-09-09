@@ -1,6 +1,8 @@
+#pragma once
+
 struct CTranslation {
-    float x;
-    float y;
+    float x;  // pixels
+    float y;  // pixels
 };
 
 struct CVelocity {

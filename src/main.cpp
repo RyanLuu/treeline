@@ -1,45 +1,48 @@
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-#include <chrono>
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
 
-#include "assets.h"
-#include "audio.h"
-#include "chart.h"
+#include <chrono>  // NOLINT [build/c++11]
+#include <functional>
+#include <string>
+
+#include "./assets.h"
+#include "./audio.h"
+#include "./chart.h"
+#include "./event.h"
+#include "./fps.h"
+#include "./keyboard.h"
+#include "./renderer.h"
+#include "./texture.h"
+#include "./timer.h"
 #include "components/button.h"
 #include "components/render.h"
 #include "components/tags.h"
 #include "components/transform.h"
-#include "ecs.h"
-#include "event.h"
-#include "fps.h"
-#include "keyboard.h"
-#include "renderer.h"
+#include "ecs/ecs.h"
 #include "systems/button.h"
 #include "systems/render.h"
 #include "systems/target.h"
 #include "systems/transform.h"
-#include "texture.h"
-#include "timer.h"
 
 constexpr bool VSYNC_ENABLE = true;
 SDL_Renderer *g_renderer;
 ECS g_ecs;
 EventManager g_eventManager;
 Assets<Texture> g_textures;
-Assets<Chart> g_charts;
+Assets<chart::Chart> g_charts;
 Assets<Audio> g_audio;
 Keyboard g_keyboard;
 auto updateTime = std::chrono::system_clock::now();
 
-void render() {
+void render(void) {
     // clear renderer
     SDL_SetRenderDrawColor(g_renderer, 63, 63, 63, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(g_renderer);
 
     auto now = std::chrono::system_clock::now();
-    double dt = std::chrono::duration_cast<std::chrono::duration<double, std::chrono::seconds::period>>(now - updateTime).count();
+    double dt = std::chrono::duration<double>(now - updateTime).count();
     updateTime = now;
     g_ecs.updateSystems(dt);
 
@@ -49,6 +52,8 @@ void render() {
 }
 
 int main(int argc, char *argv[]) {
+    (void)argc;
+    (void)argv;
 
     // initialize SDL
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -75,11 +80,13 @@ int main(int argc, char *argv[]) {
     // SET UP MIXER //
     int mixer_flags = MIX_INIT_MP3;
     if (mixer_flags != (Mix_Init(mixer_flags) & mixer_flags)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Mix_Init: %s", Mix_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Mix_Init: %s",
+                     Mix_GetError());
         exit(1);
     }
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Mix_OpenAudio: %s", Mix_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Mix_OpenAudio: %s",
+                     Mix_GetError());
         exit(1);
     }
 
@@ -90,17 +97,27 @@ int main(int argc, char *argv[]) {
     g_ecs.registerComponent<CButton>();
     g_ecs.registerComponent<CTargetTag>();
 
-    Archetype velocityArch = g_ecs.createArchetype(g_ecs.getComponentId<CVelocity>(), g_ecs.getComponentId<CTranslation>());
-    std::shared_ptr<VelocitySystem> velocitySystem = g_ecs.registerSystem<VelocitySystem>(velocityArch);
+    Archetype velocityArch =
+        g_ecs.createArchetype(g_ecs.getComponentId<CVelocity>(),
+                              g_ecs.getComponentId<CTranslation>());
+    std::shared_ptr<VelocitySystem> velocitySystem =
+        g_ecs.registerSystem<VelocitySystem>(velocityArch);
 
-    Archetype buttonArch = g_ecs.createArchetype(g_ecs.getComponentId<CSprite>(), g_ecs.getComponentId<CButton>());
-    std::shared_ptr<ButtonSystem> buttonSystem = g_ecs.registerSystem<ButtonSystem>(buttonArch);
+    Archetype buttonArch = g_ecs.createArchetype(
+        g_ecs.getComponentId<CSprite>(), g_ecs.getComponentId<CButton>());
+    std::shared_ptr<ButtonSystem> buttonSystem =
+        g_ecs.registerSystem<ButtonSystem>(buttonArch);
 
-    Archetype targetArch = g_ecs.createArchetype(g_ecs.getComponentId<CSprite>(), g_ecs.getComponentId<CTranslation>(), g_ecs.getComponentId<CVelocity>(), g_ecs.getComponentId<CTargetTag>());
-    std::shared_ptr<TargetSystem> targetSystem = g_ecs.registerSystem<TargetSystem>(targetArch);
+    Archetype targetArch = g_ecs.createArchetype(
+        g_ecs.getComponentId<CSprite>(), g_ecs.getComponentId<CTranslation>(),
+        g_ecs.getComponentId<CVelocity>(), g_ecs.getComponentId<CTargetTag>());
+    std::shared_ptr<TargetSystem> targetSystem =
+        g_ecs.registerSystem<TargetSystem>(targetArch);
 
-    Archetype renderArch = g_ecs.createArchetype(g_ecs.getComponentId<CSprite>(), g_ecs.getComponentId<CTranslation>());
-    std::shared_ptr<RenderSystem> renderSystem = g_ecs.registerSystem<RenderSystem>(renderArch);
+    Archetype renderArch = g_ecs.createArchetype(
+        g_ecs.getComponentId<CSprite>(), g_ecs.getComponentId<CTranslation>());
+    std::shared_ptr<RenderSystem> renderSystem =
+        g_ecs.registerSystem<RenderSystem>(renderArch);
 
     unsigned int baba = g_textures.load("baba.png");
     unsigned int red = g_textures.load("red.png");
@@ -112,28 +129,42 @@ int main(int argc, char *argv[]) {
     g_audio.get(song)->play();
 
     Entity babaEntity = g_ecs.createEntity();
-    g_ecs.addComponents(babaEntity, CSprite{baba, 100, 100}, CTranslation{30, 10}, CVelocity{50, 0});
+    g_ecs.addComponents(babaEntity, CSprite{baba, 100, 100},
+                        CTranslation{30, 10}, CVelocity{50, 0});
 
     Entity dEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(dEntity, CSprite{grey, 50, 50}, CTranslation{100, 100}, CButton{SDLK_d, red, grey});
+    g_ecs.addComponents<CSprite, CTranslation, CButton>(
+        dEntity, CSprite{grey, 50, 50}, CTranslation{100, 100},
+        CButton{Key::NOTE_A, red, grey});
     Entity fEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(fEntity, CSprite{grey, 50, 50}, CTranslation{200, 100}, CButton{SDLK_f, red, grey});
+    g_ecs.addComponents<CSprite, CTranslation, CButton>(
+        fEntity, CSprite{grey, 50, 50}, CTranslation{200, 100},
+        CButton{Key::NOTE_B, red, grey});
     Entity jEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(jEntity, CSprite{grey, 50, 50}, CTranslation{300, 100}, CButton{SDLK_j, red, grey});
+    g_ecs.addComponents<CSprite, CTranslation, CButton>(
+        jEntity, CSprite{grey, 50, 50}, CTranslation{300, 100},
+        CButton{Key::NOTE_C, red, grey});
     Entity kEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(kEntity, CSprite{grey, 50, 50}, CTranslation{400, 100}, CButton{SDLK_k, red, grey});
+    g_ecs.addComponents<CSprite, CTranslation, CButton>(
+        kEntity, CSprite{grey, 50, 50}, CTranslation{400, 100},
+        CButton{Key::NOTE_D, red, grey});
 
-    // QUIT EVENT LISTENER (ESC) //
+    // QUIT EVENT LISTENER //
     bool running = true;
-    g_eventManager.addListener(EventType::KEYBOARD, [](const Event &event) {
-        if (event.getParam<Key>("key") == Key::EXIT && event.getParam<bool>("down") == false) {
+    std::function<void(const Event &)> quitListener = [](const Event &event) {
+        if (event.getParam<Key>(std::string{"key"}) == Key::EXIT) {
             SDL_Event quitEvent = {.type = SDL_QUIT};
             SDL_PushEvent(&quitEvent);
         }
-    });
+        if (event.getParam<Key>(std::string{"key"}) == Key::EXIT) {
+        }
+    };
+    g_eventManager.addListener(EventType::KEYBOARD, quitListener);
 
-    Timer fpsCounterTimer = Timer([]() {g_fpsCounter.report();}, 1000);
-    Timer renderTimer = Timer(render, 0);
+    std::function<void(void)> f = []() { g_fpsCounter.report(); return 1; };
+    std::function<void(void)> fr1 = []() { render(); return 0; };
+    Timer fpsCounterTimer = Timer{f, 1000};
+    Timer renderTimer = Timer{fr1};
     updateTime = std::chrono::system_clock::now();
     fpsCounterTimer.start();
     renderTimer.start();
@@ -149,15 +180,15 @@ int main(int argc, char *argv[]) {
                     break;
                 case SDL_KEYDOWN:
                 case SDL_KEYUP: {
-                        g_keyboard.set(event.key.keysym.sym, event.type == SDL_KEYDOWN);
-                        Event keyboardEvent = {
-                            .type = EventType::KEYBOARD,
-                            .params = {
-                                {"key", g_keyboard.toKey(event.key.keysym.sym)},
-                                {"down", event.type == SDL_KEYDOWN}}};
-                        g_eventManager.sendEvent(keyboardEvent);
-                    }
-                    break;
+                    g_keyboard.set(event.key.keysym.sym,
+                                   event.type == SDL_KEYDOWN);
+                    Event keyboardEvent = {
+                        .type = EventType::KEYBOARD,
+                        .params = {
+                            {"key", g_keyboard.toKey(event.key.keysym.sym)},
+                            {"down", event.type == SDL_KEYDOWN}}};
+                    g_eventManager.sendEvent(keyboardEvent);
+                } break;
                 default:
                     break;
             }

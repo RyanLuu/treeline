@@ -1,3 +1,5 @@
+#pragma once
+
 #include <optional>
 
 struct CSprite {
@@ -5,3 +7,4 @@ struct CSprite {
     std::optional<unsigned int> width;
     std::optional<unsigned int> height;
 };
+

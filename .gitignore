@@ -31,3 +31,8 @@
 *.out
 *.app
 bin/
+
+# Clang
+.cache/
+.clang-format
+compile_commands.json

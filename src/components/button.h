@@ -1,7 +1,9 @@
-#include <SDL2/SDL.h>
+#pragma once
+
+#include "../keyboard.h"
 
 struct CButton {
-    SDL_Keycode keycode;
+    Key key;
     unsigned int activeSprite;
     unsigned int idleSprite;
 };

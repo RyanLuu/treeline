@@ -27,9 +27,9 @@ Download and install
 - [ ] compare keypress timing to chart
 - [x] rendering notes
 - [ ] render order
-- [ ] determine chart file format
-- [ ] record a score/chart
-- [ ] load a chart
+- [x] determine chart file format
+- [ ] chart editor/MIDI converter
+- [x] load a chart
 - [ ] start a chart
 - [x] play a song
 - [ ] pause song/chart
