@@ -12,6 +12,7 @@ enum class Key : size_t {
     NOTE_D,
     SELECT,
     EXIT,
+    METRICS,
     Count  // hack to get the number of keys
 };
 
@@ -28,7 +29,8 @@ class Keyboard {
                      {SDLK_j, Key::NOTE_C},
                      {SDLK_k, Key::NOTE_D},
                      {SDLK_RETURN, Key::SELECT},
-                     {SDLK_ESCAPE, Key::EXIT}} {}
+                     {SDLK_ESCAPE, Key::EXIT},
+                     {SDLK_F12, Key::METRICS}} {}
     bool get(Key key) {
         return m_keys.test(static_cast<size_t>(key));
     }

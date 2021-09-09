@@ -2,11 +2,11 @@
 
 #include <SDL.h>
 
-#include "../components/render.h"
-#include "../components/tags.h"
-#include "../components/transform.h"
-#include "../ecs/ecs.h"
-#include "../texture.h"
+#include "src/components/render.h"
+#include "src/components/tags.h"
+#include "src/components/transform.h"
+#include "src/ecs/ecs.h"
+#include "src/texture.h"
 
 class TargetSystem : public System {
  public:

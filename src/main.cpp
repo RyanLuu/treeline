@@ -7,24 +7,25 @@
 #include <functional>
 #include <string>
 
-#include "./assets.h"
-#include "./audio.h"
-#include "./chart.h"
-#include "./event.h"
-#include "./fps.h"
-#include "./keyboard.h"
-#include "./renderer.h"
-#include "./texture.h"
-#include "./timer.h"
-#include "components/button.h"
-#include "components/render.h"
-#include "components/tags.h"
-#include "components/transform.h"
 #include "ecs/ecs.h"
-#include "systems/button.h"
-#include "systems/render.h"
-#include "systems/target.h"
-#include "systems/transform.h"
+#include "src/assets.h"
+#include "src/audio.h"
+#include "src/chart.h"
+#include "src/components/button.h"
+#include "src/components/render.h"
+#include "src/components/tags.h"
+#include "src/components/transform.h"
+#include "src/event.h"
+#include "src/fps.h"
+#include "src/keyboard.h"
+#include "src/logging.h"
+#include "src/renderer.h"
+#include "src/systems/button.h"
+#include "src/systems/render.h"
+#include "src/systems/target.h"
+#include "src/systems/transform.h"
+#include "src/texture.h"
+#include "src/timer.h"
 
 constexpr bool VSYNC_ENABLE = true;
 SDL_Renderer *g_renderer;
@@ -55,38 +56,38 @@ int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
 
+    logInit();
+
     // initialize SDL
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init: %s\n", SDL_GetError());
+        LOG_ERROR("SDL_Init: %s\n", SDL_GetError());
         exit(1);
     }
-    SDL_Log("SDL successfully initialized!\n");
+    LOG_INFO("SDL successfully initialized!\n");
     SDL_version compileVersion;
     SDL_MIXER_VERSION(&compileVersion);
     const SDL_version *runtimeVersion = Mix_Linked_Version();
-    SDL_Log("SDL_mixer: C %d.%d.%d, R %d.%d.%d",
-            compileVersion.major, compileVersion.minor, compileVersion.patch,
-            runtimeVersion->major, runtimeVersion->minor, runtimeVersion->patch);
+    LOG_INFO("SDL_mixer: C %d.%d.%d, R %d.%d.%d",
+             compileVersion.major, compileVersion.minor, compileVersion.patch,
+             runtimeVersion->major, runtimeVersion->minor, runtimeVersion->patch);
 
     // SET UP WINDOW //
     SDL_Window *g_window = SDL_CreateWindow("treeline", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 750, 500, 0);
     Uint32 render_flags = SDL_RENDERER_ACCELERATED | (VSYNC_ENABLE ? SDL_RENDERER_PRESENTVSYNC : 0);
     g_renderer = SDL_CreateRenderer(g_window, -1, render_flags);
     if (g_renderer == nullptr) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateRenderer: %s", SDL_GetError());
+        LOG_ERROR("SDL_CreateRenderer: %s", SDL_GetError());
         exit(1);
     }
 
     // SET UP MIXER //
     int mixer_flags = MIX_INIT_MP3;
     if (mixer_flags != (Mix_Init(mixer_flags) & mixer_flags)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Mix_Init: %s",
-                     Mix_GetError());
+        LOG_ERROR("Mix_Init: %s", Mix_GetError());
         exit(1);
     }
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Mix_OpenAudio: %s",
-                     Mix_GetError());
+        LOG_ERROR("Mix_OpenAudio: %s", Mix_GetError());
         exit(1);
     }
 
@@ -149,25 +150,30 @@ int main(int argc, char *argv[]) {
         kEntity, CSprite{grey, 50, 50}, CTranslation{400, 100},
         CButton{Key::NOTE_D, red, grey});
 
+    std::function<void(void)> f = []() { g_fpsCounter.report(); return 1; };
+    Timer fpsCounterTimer = Timer{f, 1000};
+    Timer renderTimer = Timer{render};
+    updateTime = std::chrono::system_clock::now();
+    renderTimer.start();
+
     // QUIT EVENT LISTENER //
     bool running = true;
-    std::function<void(const Event &)> quitListener = [](const Event &event) {
-        if (event.getParam<Key>(std::string{"key"}) == Key::EXIT) {
+    g_eventManager.addListener(EventType::KEYBOARD, [](const Event &event) {
+        if (event.getParam<Key>("key") == Key::EXIT &&
+            event.getParam<bool>("down") == true) {
             SDL_Event quitEvent = {.type = SDL_QUIT};
             SDL_PushEvent(&quitEvent);
         }
-        if (event.getParam<Key>(std::string{"key"}) == Key::EXIT) {
-        }
-    };
-    g_eventManager.addListener(EventType::KEYBOARD, quitListener);
+    });
 
-    std::function<void(void)> f = []() { g_fpsCounter.report(); return 1; };
-    std::function<void(void)> fr1 = []() { render(); return 0; };
-    Timer fpsCounterTimer = Timer{f, 1000};
-    Timer renderTimer = Timer{fr1};
-    updateTime = std::chrono::system_clock::now();
-    fpsCounterTimer.start();
-    renderTimer.start();
+    // METRICS EVENT LISTENER //
+    g_eventManager.addListener(EventType::KEYBOARD, [&fpsCounterTimer](const Event &event) {
+        if (event.getParam<Key>("key") == Key::METRICS &&
+            event.getParam<bool>("down") == true) {
+            fpsCounterTimer.start();
+        }
+    });
+
     SDL_Event event;
 
     // EVENT LOOP //
@@ -175,7 +181,7 @@ int main(int argc, char *argv[]) {
         if (SDL_WaitEvent(&event)) {
             switch (event.type) {
                 case SDL_QUIT:
-                    SDL_Log("SDL_QUIT signal received.");
+                    LOG_INFO("SDL_QUIT signal received.");
                     running = false;
                     break;
                 case SDL_KEYDOWN:

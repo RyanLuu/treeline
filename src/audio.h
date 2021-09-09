@@ -5,7 +5,8 @@
 
 #include <string>
 
-#include "./assets.h"
+#include "src/assets.h"
+#include "src/logging.h"
 
 static constexpr char AudioRoot[] = "assets/audio/";
 
@@ -14,8 +15,7 @@ class Audio : public Asset {
     void load(const std::string &filepath) override {
         m_audio = Mix_LoadMUS((AudioRoot + filepath).c_str());
         if (!m_audio) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Mix_LoadMUS: %s",
-                         Mix_GetError());
+            LOG_ERROR("Mix_LoadMUS: %s", Mix_GetError());
             exit(1);
         }
     }
@@ -25,8 +25,7 @@ class Audio : public Asset {
     }
     void play() {
         if (Mix_PlayMusic(m_audio, 1) == -1) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Mix_PlayMusic: %s",
-                         Mix_GetError());
+            LOG_ERROR("Mix_PlayMusic: %s", Mix_GetError());
             exit(1);
         }
     }

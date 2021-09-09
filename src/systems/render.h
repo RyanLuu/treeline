@@ -2,12 +2,12 @@
 
 #include <memory>
 
-#include "../assets.h"
-#include "../components/render.h"
-#include "../components/transform.h"
-#include "../ecs/ecs.h"
-#include "../renderer.h"
-#include "../texture.h"
+#include "src/assets.h"
+#include "src/components/render.h"
+#include "src/components/transform.h"
+#include "src/ecs/ecs.h"
+#include "src/renderer.h"
+#include "src/texture.h"
 
 class RenderSystem : public System {
  public:

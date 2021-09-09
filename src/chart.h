@@ -10,7 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "./assets.h"
+#include "src/assets.h"
+#include "src/logging.h"
 
 namespace chart {
 
@@ -43,8 +44,7 @@ class Chart : public Asset {
     void load(const std::string &filepath) override {
         std::ifstream stream((ChartRoot + filepath).c_str(), std::ios::binary);
         if (!stream.is_open()) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to open %s",
-                         filepath.c_str());
+            LOG_ERROR("Failed to open %s", filepath.c_str());
             exit(1);
         }
 
@@ -59,10 +59,7 @@ class Chart : public Asset {
 
         size_t dataSize = HeaderSize + m_header.length;
         if (dataSize > fileLength) {
-            SDL_LogError(
-                SDL_LOG_CATEGORY_APPLICATION,
-                "Chart::parse: file is too small to hold data (%lu > %lu)",
-                dataSize, fileLength);
+            LOG_ERROR("Chart::parse: file is too small to hold data (%lu > %lu)", dataSize, fileLength);
             exit(1);
         }
 
@@ -74,14 +71,10 @@ class Chart : public Asset {
         if (mdSize > 0) {
             std::string mdData(mdSize, ' ');
             stream.read(reinterpret_cast<char *>(mdData.data()), mdSize);
-            SDL_Log("metadata: \n%s", mdData.c_str());
+            LOG_INFO("metadata: \n%s", mdData.c_str());
         }
 
-        SDL_Log("Loaded chart [%s]", filepath.c_str());
-        /*
-           SDL_Log("  %.2f bpm", m_header.tempo / 1024.f);
-           SDL_Log("  %u measures (%hu/4)", m_header.length, m_header.ts);
-           */
+        LOG_INFO("Loaded chart [%s]", filepath.c_str());
         stream.close();
     }
     void unload() override {}
@@ -90,7 +83,7 @@ class Chart : public Asset {
     void parseHeader(const std::array<std::uint8_t, HeaderSize> &data) {
         m_header.version = data[0];
         m_header.length = (data[1] << 16) | (data[2] << 8) | data[3];
-        SDL_Log("  v%hu | %u bytes", m_header.version, m_header.length);
+        LOG_INFO("  v%hu | %u bytes", m_header.version, m_header.length);
     }
 
     void parse(const std::vector<std::uint8_t> &data) {
@@ -117,20 +110,20 @@ class Chart : public Asset {
                 offset += parse32(data, offset, m_tempo);
                 m_meter = data.at(offset);
                 length += 5;
-                SDL_Log("time event %u %hu (t=%u)", m_tempo, m_meter, m_time);
+                LOG_INFO("time event %u %hu (t=%u)", m_tempo, m_meter, m_time);
             } break;
             case EventType::NOTE: {
                 uint8_t value = data.at(offset);
                 length += 1;
                 m_notes.emplace_back(Note{.value = value, .time = m_time});
-                SDL_Log("note event %hu (t=%u)", value, m_time);
+                LOG_INFO("note event %hu (t=%u)", value, m_time);
             } break;
             case EventType::HOLD_HEAD: {
             } break;
             case EventType::HOLD_TAIL: {
             } break;
             case EventType::END: {
-                SDL_Log("end event (t=%u)", m_time);
+                LOG_INFO("end event (t=%u)", m_time);
                 m_length = m_time;
             } break;
         }
