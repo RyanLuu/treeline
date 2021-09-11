@@ -18,7 +18,6 @@ namespace chart {
 static constexpr char ChartRoot[] = "assets/charts/";
 static constexpr size_t HeaderSize = 4;
 static constexpr size_t NumTracks = 4;
-using Milliseconds = std::chrono::duration<uint32_t, std::milli>;
 
 enum class EventType : uint8_t {
     TIME = 0x00,

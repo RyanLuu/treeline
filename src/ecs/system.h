@@ -8,7 +8,7 @@ class System {
  public:
     virtual ~System() = default;
     std::unordered_set<Entity> m_entities;
-    virtual void update(double dt) = 0;
+    virtual void update(uint64_t dt) = 0;
 };
 
 class SystemManager {
@@ -62,7 +62,7 @@ class SystemManager {
         }
     }
 
-    void update(double dt) {
+    void update(uint64_t dt) {
         for (const auto &pair : m_systems) {
             pair.first->update(dt);
         }

@@ -3,7 +3,6 @@
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 
-#include <chrono>  // NOLINT [build/c++11]
 #include <functional>
 #include <string>
 
@@ -35,15 +34,16 @@ Assets<Texture> g_textures;
 Assets<chart::Chart> g_charts;
 Assets<Audio> g_audio;
 Keyboard g_keyboard;
-auto updateTime = std::chrono::system_clock::now();
+uint64_t updateTime;
 
 void render(void) {
     // clear renderer
     SDL_SetRenderDrawColor(g_renderer, 63, 63, 63, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(g_renderer);
 
-    auto now = std::chrono::system_clock::now();
-    double dt = std::chrono::duration<double>(now - updateTime).count();
+    uint64_t now = time_now();
+    // Use 4 bytes rather than 8 for dt (2^32 us > 1 hr)
+    uint32_t dt = now - updateTime;
     updateTime = now;
     g_ecs.updateSystems(dt);
 
@@ -126,9 +126,6 @@ int main(int argc, char *argv[]) {
 
     g_charts.load("test.chart");
 
-    unsigned int song = g_audio.load("music.mp3");
-    g_audio.get(song)->play();
-
     Entity babaEntity = g_ecs.createEntity();
     g_ecs.addComponents(babaEntity, CSprite{baba, 100, 100},
                         CTranslation{30, 10}, CVelocity{50, 0});
@@ -150,11 +147,8 @@ int main(int argc, char *argv[]) {
         kEntity, CSprite{grey, 50, 50}, CTranslation{400, 100},
         CButton{Key::NOTE_D, red, grey});
 
-    std::function<void(void)> f = []() { g_fpsCounter.report(); return 1; };
+    std::function<void(void)> f = []() { g_fpsCounter.report(); };
     Timer fpsCounterTimer = Timer{f, 1000};
-    Timer renderTimer = Timer{render};
-    updateTime = std::chrono::system_clock::now();
-    renderTimer.start();
 
     // QUIT EVENT LISTENER //
     bool running = true;
@@ -170,29 +164,43 @@ int main(int argc, char *argv[]) {
     g_eventManager.addListener(EventType::KEYBOARD, [&fpsCounterTimer](const Event &event) {
         if (event.getParam<Key>("key") == Key::METRICS &&
             event.getParam<bool>("down") == true) {
-            fpsCounterTimer.start();
+            fpsCounterTimer.toggle();
         }
     });
 
-    SDL_Event event;
+    // PLAY SONG EVENT LISTENER //
+    g_eventManager.addListener(EventType::KEYBOARD, [](const Event &event) {
+        if (event.getParam<Key>("key") == Key::SELECT &&
+            event.getParam<bool>("down") == false) {
+            unsigned int song = g_audio.load("music.mp3");
+            g_audio.get(song)->play();
+        }
+    });
+
+    updateTime = time_now();
+    Timer renderTimer = Timer{render};
+    fpsCounterTimer.start();
+    renderTimer.start();
 
     // EVENT LOOP //
+    SDL_Event event;
     while (running) {
         if (SDL_WaitEvent(&event)) {
             switch (event.type) {
-                case SDL_QUIT:
+                case SDL_QUIT: {
                     LOG_INFO("SDL_QUIT signal received.");
                     running = false;
-                    break;
+                } break;
                 case SDL_KEYDOWN:
                 case SDL_KEYUP: {
-                    g_keyboard.set(event.key.keysym.sym,
-                                   event.type == SDL_KEYDOWN);
+                    auto now = time_now();
+                    g_keyboard.set(event.key.keysym.sym, event.type == SDL_KEYDOWN);
                     Event keyboardEvent = {
                         .type = EventType::KEYBOARD,
                         .params = {
                             {"key", g_keyboard.toKey(event.key.keysym.sym)},
-                            {"down", event.type == SDL_KEYDOWN}}};
+                            {"down", event.type == SDL_KEYDOWN},
+                            {"time", now}}};
                     g_eventManager.sendEvent(keyboardEvent);
                 } break;
                 default:
@@ -201,7 +209,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    fpsCounterTimer.stop();
+    if (fpsCounterTimer.isRunning()) {
+        fpsCounterTimer.stop();
+    }
     renderTimer.stop();
 
     g_charts.unloadAll();

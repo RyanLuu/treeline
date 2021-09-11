@@ -2,22 +2,21 @@
 
 #include <SDL.h>
 
-#include <chrono>  // NOLINT [build/c++11]
 #include <optional>
 
-#include "./logging.h"
+#include "src/logging.h"
+#include "src/timer.h"
 
 class FPSCounter {
  public:
     FPSCounter() : m_lastReportTime(std::nullopt) {}
     void report() {
-        auto now = std::chrono::system_clock::now();
+        uint64_t now = time_now();
         if (!m_lastReportTime.has_value()) {
             LOG_INFO("Starting FPS Counter");
             m_lastReportTime = std::make_optional(now);
         } else {
-            double dt = std::chrono::duration_cast<std::chrono::duration<double, std::chrono::seconds::period>>(now - m_lastReportTime.value()).count();
-            LOG_INFO("FPS: %f", m_numFrames / dt);
+            LOG_INFO("FPS: %f", static_cast<float>(m_numFrames) / (now - m_lastReportTime.value()) * 1'000'000);
             m_numFrames = 0;
             m_lastReportTime = std::make_optional(now);
         }
@@ -31,7 +30,7 @@ class FPSCounter {
 
  private:
     size_t m_numFrames;
-    std::optional<std::chrono::time_point<std::chrono::system_clock>> m_lastReportTime;
+    std::optional<uint64_t> m_lastReportTime;
 };
 
 FPSCounter g_fpsCounter;

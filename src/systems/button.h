@@ -7,7 +7,7 @@
 
 class ButtonSystem : public System {
  public:
-    void update(double) override {
+    void update(uint64_t) override {
         for (Entity entity : m_entities) {
             CSprite &sprite = g_ecs.getComponent<CSprite>(entity);
             CButton &button = g_ecs.getComponent<CButton>(entity);

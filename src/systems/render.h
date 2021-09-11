@@ -11,7 +11,7 @@
 
 class RenderSystem : public System {
  public:
-    void update(double) override {
+    void update(uint64_t) override {
         for (Entity entity : m_entities) {
             CSprite &sprite = g_ecs.getComponent<CSprite>(entity);
             std::shared_ptr<Texture> t = g_textures.get(sprite.textureId);

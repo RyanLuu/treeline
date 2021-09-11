@@ -51,7 +51,11 @@ void log(LogPriority priority, const char *filename, int line, const char *fmt, 
         if (priority >= handlerPriority) {
             va_list args;
             va_start(args, fmt);
-            fprintf(file, "[%s] %s: %s:%d : ", timeString, priorityString(priority), basename(filename), line);
+            if (filename != nullptr) {
+                fprintf(file, "[%s] %s: %s:%d : ", timeString, priorityString(priority), basename(filename), line);
+            } else {
+                fprintf(file, "[%s] %s: ", timeString, priorityString(priority));
+            }
             vfprintf(file, fmt, args);
             fprintf(file, "\n");
             va_end(args);

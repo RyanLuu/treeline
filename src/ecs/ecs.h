@@ -93,7 +93,7 @@ class ECS {
         m_systemManager->setArchetype<T>(archetype);
     }
 
-    void updateSystems(double dt) {
+    void updateSystems(uint64_t dt) {
         m_systemManager->update(dt);
 
         for (Entity e : m_destroyList) {
