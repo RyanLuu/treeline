@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
     Archetype renderArch = g_ecs.createArchetype(
         g_ecs.getComponentId<CSprite>(), g_ecs.getComponentId<CTranslation>());
     std::shared_ptr<RenderSystem> renderSystem =
-        g_ecs.registerSystem<RenderSystem>(renderArch);
+        g_ecs.registerRenderSystem<RenderSystem>(renderArch);
 
     AssetId baba = g_textures.load("baba.png");
     AssetId red = g_textures.load("red.png");
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     AssetId songId = g_audio.load("music.mp3");
 
     Entity babaEntity = g_ecs.createEntity();
-    g_ecs.addComponents(babaEntity, CSprite{baba, 100, 100},
+    g_ecs.addComponents(babaEntity, CSprite{baba, 40, 40},
                         CTranslation{30, 10}, CVelocity{50, 0});
 
     Entity dEntity = g_ecs.createEntity();

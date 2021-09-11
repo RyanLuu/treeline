@@ -33,7 +33,6 @@ class SystemManager {
     void setArchetype(Archetype archetype) {
         static_assert(std::is_base_of<System, T>::value, "T must inherit from System");
 
-        // ensure system of the same type does not already exist
         std::size_t typeHash = typeid(T).hash_code();
         const auto &pair = std::find_if(m_systems.begin(), m_systems.end(), [typeHash](const auto &pair) {
             return typeHash == typeid(*pair.first).hash_code();
@@ -66,6 +65,15 @@ class SystemManager {
         for (const auto &pair : m_systems) {
             pair.first->update(dt);
         }
+    }
+
+    template <typename T>
+    bool hasSystem() {
+        std::size_t typeHash = typeid(T).hash_code();
+        const auto &pair = std::find_if(m_systems.begin(), m_systems.end(), [typeHash](const auto &pair) {
+            return typeHash == typeid(*pair.first).hash_code();
+        });
+        return pair != m_systems.end();
     }
 
  private:

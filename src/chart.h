@@ -75,7 +75,7 @@ class Chart : public Asset {
         if (mdSize > 0) {
             std::string mdData(mdSize, ' ');
             stream.read(reinterpret_cast<char *>(mdData.data()), mdSize);
-            LOG_INFO("metadata: \n%s", mdData.c_str());
+            LOG_DEBUG("metadata: \n%s", mdData.c_str());
         }
 
         LOG_INFO("Loaded chart [%s]", filepath.c_str());
@@ -98,7 +98,7 @@ class Chart : public Asset {
     void parseHeader(const std::array<std::uint8_t, HeaderSize> &data) {
         m_header.version = data[0];
         m_header.length = (data[1] << 16) | (data[2] << 8) | data[3];
-        LOG_INFO("  v%hu | %u bytes", m_header.version, m_header.length);
+        LOG_DEBUG("  v%hu | %u bytes", m_header.version, m_header.length);
     }
 
     void parse(const std::vector<std::uint8_t> &data) {
@@ -109,8 +109,8 @@ class Chart : public Asset {
         while (offset < data.size()) {
             uint32_t deltaTime;  // in ticks
             offset += parseVLQ(data, offset, deltaTime);
-            offset += parseEvent(data, offset);
             m_time += uint32_t(tickTime(m_tempo) * deltaTime);
+            offset += parseEvent(data, offset);
         }
     }
 
@@ -125,20 +125,20 @@ class Chart : public Asset {
                 offset += parse32(data, offset, m_tempo);
                 m_meter = data.at(offset);
                 length += 5;
-                LOG_INFO("time event %u %hu (t=%u)", m_tempo, m_meter, m_time);
+                LOG_DEBUG("time event %u %hu (t=%u)", m_tempo, m_meter, m_time);
             } break;
             case EventType::NOTE: {
                 uint8_t value = data.at(offset);
                 length += 1;
                 m_notes.emplace_back(Note{.value = value, .time = m_time});
-                LOG_INFO("note event %hu (t=%u)", value, m_time);
+                LOG_DEBUG("note event %hu (t=%u)", value, m_time);
             } break;
             case EventType::HOLD_HEAD: {
             } break;
             case EventType::HOLD_TAIL: {
             } break;
             case EventType::END: {
-                LOG_INFO("end event (t=%u)", m_time);
+                LOG_DEBUG("end event (t=%u)", m_time);
                 m_length = m_time;
             } break;
         }

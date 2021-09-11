@@ -3,15 +3,18 @@
 #include <memory>
 #include <unordered_set>
 
-#include "./component.h"
-#include "./entity.h"
-#include "./system.h"
+#include "src/ecs/component.h"
+#include "src/ecs/entity.h"
+#include "src/ecs/system.h"
+#include "src/logging.h"
+
 class ECS {
  public:
     ECS() {
         m_entityManager = std::make_unique<EntityManager>();
         m_componentManager = std::make_unique<ComponentManager>();
-        m_systemManager = std::make_unique<SystemManager>();
+        m_updateSystemManager = std::make_unique<SystemManager>();
+        m_renderSystemManager = std::make_unique<SystemManager>();
     }
 
     template <typename... Ts>
@@ -48,7 +51,8 @@ class ECS {
         m_entityManager->setArchetype(e, archetype);
 
         // notify system manager of change
-        m_systemManager->notifyChanged(e, archetype);
+        m_updateSystemManager->notifyChanged(e, archetype);
+        m_renderSystemManager->notifyChanged(e, archetype);
     }
 
     template <typename T, typename... Ts>
@@ -63,6 +67,7 @@ class ECS {
         // recursive call
         addComponents(e, components...);
     }
+
     template <typename T>
     void removeComponent(Entity e) {
         m_componentManager->removeComponent<T>(e);
@@ -73,28 +78,43 @@ class ECS {
         m_entityManager->setArchetype(e, archetype);
 
         // notify system manager of change
-        m_systemManager->notifyChanged(e, archetype);
+        m_updateSystemManager->notifyChanged(e, archetype);
+        m_renderSystemManager->notifyChanged(e, archetype);
     }
+
     template <typename T>
     T &getComponent(Entity e) {
         return m_componentManager->getComponent<T>(e);
     }
+
     template <typename T>
     Component getComponentId() {
         return m_componentManager->getId<T>();
     }
+
     template <typename T>
     std::shared_ptr<T> registerSystem(Archetype archetype = Archetype{}) {
-        return m_systemManager->registerSystem<T>(archetype);
+        return m_updateSystemManager->registerSystem<T>(archetype);
+    }
+
+    template <typename T>
+    std::shared_ptr<T> registerRenderSystem(Archetype archetype = Archetype{}) {
+        return m_renderSystemManager->registerSystem<T>(archetype);
     }
 
     template <typename T>
     void setSystemArchetype(Archetype archetype) {
-        m_systemManager->setArchetype<T>(archetype);
+        if (m_updateSystemManager->hasSystem<T>()) {
+            m_updateSystemManager->setArchetype<T>(archetype);
+        }
+        if (m_renderSystemManager->hasSystem<T>()) {
+            m_renderSystemManager->setArchetype<T>(archetype);
+        }
     }
 
     void updateSystems(uint64_t dt) {
-        m_systemManager->update(dt);
+        m_updateSystemManager->update(dt);
+        m_renderSystemManager->update(dt);
 
         for (Entity e : m_destroyList) {
             // deallocate entity ID for future use
@@ -102,7 +122,8 @@ class ECS {
             // delete component data
             m_componentManager->notifyDestroyed(e);
             // remove entity from all systems
-            m_systemManager->notifyDestroyed(e);
+            m_updateSystemManager->notifyDestroyed(e);
+            m_renderSystemManager->notifyDestroyed(e);
         }
         m_destroyList.clear();
     }
@@ -110,7 +131,8 @@ class ECS {
  private:
     std::unique_ptr<EntityManager> m_entityManager;
     std::unique_ptr<ComponentManager> m_componentManager;
-    std::unique_ptr<SystemManager> m_systemManager;
+    std::unique_ptr<SystemManager> m_updateSystemManager;
+    std::unique_ptr<SystemManager> m_renderSystemManager;
     std::unordered_set<Entity> m_destroyList;
 };
 

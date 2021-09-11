@@ -18,6 +18,7 @@ class Audio : public Asset {
             LOG_ERROR("Mix_LoadMUS: %s", Mix_GetError());
             exit(1);
         }
+        LOG_INFO("Loaded audio [%s]", filepath.c_str());
     }
     void unload() override {
         Mix_FreeMusic(m_audio);
