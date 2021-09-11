@@ -1,6 +1,6 @@
 CC=clang++
 CFLAGS=-c -std=c++17 -Wall -Werror -MD -I/usr/local/include/SDL2 -I.
-LDFLAGS=-lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+LDFLAGS=-lSDL2 -lSDL2_image -lSDL2_ttf
 SRC=src
 BIN=bin
 OBJ=$(BIN)/obj

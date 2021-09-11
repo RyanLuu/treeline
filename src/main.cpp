@@ -1,7 +1,6 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <SDL_mixer.h>
 
 #include <functional>
 #include <string>
@@ -63,13 +62,7 @@ int main(int argc, char *argv[]) {
         LOG_ERROR("SDL_Init: %s\n", SDL_GetError());
         exit(1);
     }
-    LOG_INFO("SDL successfully initialized!\n");
-    SDL_version compileVersion;
-    SDL_MIXER_VERSION(&compileVersion);
-    const SDL_version *runtimeVersion = Mix_Linked_Version();
-    LOG_INFO("SDL_mixer: C %d.%d.%d, R %d.%d.%d",
-             compileVersion.major, compileVersion.minor, compileVersion.patch,
-             runtimeVersion->major, runtimeVersion->minor, runtimeVersion->patch);
+    LOG_INFO("SDL successfully initialized!");
 
     // SET UP WINDOW //
     SDL_Window *g_window = SDL_CreateWindow("treeline", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 750, 500, 0);
@@ -82,17 +75,6 @@ int main(int argc, char *argv[]) {
 
     // LOAD TEXTURES //
     g_targetTexture = g_textures.load("target.png");
-
-    // SET UP MIXER //
-    int mixer_flags = MIX_INIT_MP3;
-    if (mixer_flags != (Mix_Init(mixer_flags) & mixer_flags)) {
-        LOG_ERROR("Mix_Init: %s", Mix_GetError());
-        exit(1);
-    }
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
-        LOG_ERROR("Mix_OpenAudio: %s", Mix_GetError());
-        exit(1);
-    }
 
     // REGISTER COMPONENTS //
     g_ecs.registerComponent<CSprite>();
@@ -176,7 +158,7 @@ int main(int argc, char *argv[]) {
     g_eventManager.addListener(EventType::KEYBOARD, [songId, chartId](const Event &event) {
         if (event.getParam<Key>("key") == Key::SELECT &&
             event.getParam<bool>("down") == false) {
-            g_audio.get(songId)->play();
+            g_audio.get(songId)->toggle();
             g_charts.get(chartId)->play();
         }
     });

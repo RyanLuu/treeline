@@ -36,3 +36,6 @@ bin/
 .cache/
 .clang-format
 compile_commands.json
+
+# Libraries (built from source)
+src/lib/
