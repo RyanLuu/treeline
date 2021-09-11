@@ -11,7 +11,12 @@
 #include <vector>
 
 #include "src/assets.h"
+#include "src/components/render.h"
+#include "src/components/tags.h"
+#include "src/components/transform.h"
+#include "src/ecs/ecs.h"
 #include "src/logging.h"
+#include "src/texture.h"
 
 namespace chart {
 
@@ -76,6 +81,17 @@ class Chart : public Asset {
         LOG_INFO("Loaded chart [%s]", filepath.c_str());
         stream.close();
     }
+
+    void play() {
+        for (Note note : m_notes) {
+            float speed = 300;
+            float x = 100 + note.value * 100;
+            float y = 100 + speed * note.time / 1'000'000;
+            Entity newTarget = g_ecs.createEntity();
+            g_ecs.addComponents(newTarget, CSprite{g_targetTexture, 50, 50}, CTranslation{x, y}, CVelocity{0, -speed}, CTargetTag{});
+        }
+    }
+
     void unload() override {}
 
  private:

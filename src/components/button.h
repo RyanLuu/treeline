@@ -1,10 +1,11 @@
 #pragma once
 
-#include "../keyboard.h"
+#include "src/assets.h"
+#include "src/keyboard.h"
 
 struct CButton {
     Key key;
-    unsigned int activeSprite;
-    unsigned int idleSprite;
+    AssetId activeSprite;
+    AssetId idleSprite;
 };
 

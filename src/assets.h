@@ -4,6 +4,8 @@
 #include <string>
 #include <unordered_map>
 
+using AssetId = uint32_t;
+
 class Asset {
  public:
     virtual ~Asset() = default;
@@ -14,20 +16,20 @@ class Asset {
 template <typename T>
 class Assets {
  public:
-    unsigned int load(const std::string &filepath) {
+    AssetId load(const std::string &filepath) {
         std::shared_ptr<T> resource = std::make_shared<T>();
         resource->load(filepath);
         m_resources.insert({m_currentId, resource});
         return m_currentId++;
     }
-    std::shared_ptr<T> get(unsigned int id) {
+    std::shared_ptr<T> get(AssetId id) {
         auto it = m_resources.find(id);
         if (it == m_resources.end()) {
             return nullptr;
         }
         return it->second;
     }
-    void unload(unsigned int id) {
+    void unload(AssetId id) {
         for (auto it = m_resources.begin(); it != m_resources.end(); it++) {
             if (it->first == id) {
                 it->second->unload();
@@ -44,7 +46,7 @@ class Assets {
     }
 
  private:
-    std::unordered_map<unsigned int, std::shared_ptr<T>> m_resources;
-    unsigned int m_currentId;
+    std::unordered_map<AssetId, std::shared_ptr<T>> m_resources;
+    AssetId m_currentId;
 };
 

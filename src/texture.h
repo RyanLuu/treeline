@@ -31,3 +31,5 @@ class Texture : public Asset {
 
 extern Assets<Texture> g_textures;
 
+AssetId g_targetTexture;
+

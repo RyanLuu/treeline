@@ -80,6 +80,9 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    // LOAD TEXTURES //
+    g_targetTexture = g_textures.load("target.png");
+
     // SET UP MIXER //
     int mixer_flags = MIX_INIT_MP3;
     if (mixer_flags != (Mix_Init(mixer_flags) & mixer_flags)) {
@@ -120,11 +123,12 @@ int main(int argc, char *argv[]) {
     std::shared_ptr<RenderSystem> renderSystem =
         g_ecs.registerSystem<RenderSystem>(renderArch);
 
-    unsigned int baba = g_textures.load("baba.png");
-    unsigned int red = g_textures.load("red.png");
-    unsigned int grey = g_textures.load("grey.png");
+    AssetId baba = g_textures.load("baba.png");
+    AssetId red = g_textures.load("red.png");
+    AssetId grey = g_textures.load("grey.png");
 
-    g_charts.load("test.chart");
+    AssetId chartId = g_charts.load("test.chart");
+    AssetId songId = g_audio.load("music.mp3");
 
     Entity babaEntity = g_ecs.createEntity();
     g_ecs.addComponents(babaEntity, CSprite{baba, 100, 100},
@@ -148,7 +152,7 @@ int main(int argc, char *argv[]) {
         CButton{Key::NOTE_D, red, grey});
 
     std::function<void(void)> f = []() { g_fpsCounter.report(); };
-    Timer fpsCounterTimer = Timer{f, 1000};
+    Timer fpsCounterTimer = Timer{f, 1'000'000};
 
     // QUIT EVENT LISTENER //
     bool running = true;
@@ -169,11 +173,11 @@ int main(int argc, char *argv[]) {
     });
 
     // PLAY SONG EVENT LISTENER //
-    g_eventManager.addListener(EventType::KEYBOARD, [](const Event &event) {
+    g_eventManager.addListener(EventType::KEYBOARD, [songId, chartId](const Event &event) {
         if (event.getParam<Key>("key") == Key::SELECT &&
             event.getParam<bool>("down") == false) {
-            unsigned int song = g_audio.load("music.mp3");
-            g_audio.get(song)->play();
+            g_audio.get(songId)->play();
+            g_charts.get(chartId)->play();
         }
     });
 

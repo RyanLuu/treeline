@@ -13,7 +13,7 @@ uint64_t time_now() {
 
 class Timer {
  public:
-    explicit Timer(std::function<void(void)> func, unsigned int interval = 0) : m_func(func), m_interval(interval), m_running(false) {}
+    explicit Timer(std::function<void(void)> func, uint32_t interval = 0) : m_func(func), m_interval(interval), m_running(false) {}
 
     void start() {
         assert(!m_running);
@@ -22,7 +22,7 @@ class Timer {
             m_thread = std::thread([this]() {
                 while (m_running) {
                     std::unique_lock<std::mutex> lock(m_mutex);
-                    auto next = std::chrono::steady_clock::now() + std::chrono::milliseconds(m_interval);
+                    auto next = std::chrono::steady_clock::now() + std::chrono::microseconds(m_interval);
                     m_func();
                     m_cv.wait_until(lock, next);
                 }

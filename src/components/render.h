@@ -2,8 +2,10 @@
 
 #include <optional>
 
+#include "src/assets.h"
+
 struct CSprite {
-    unsigned int textureId;
+    AssetId textureId;
     std::optional<unsigned int> width;
     std::optional<unsigned int> height;
 };
