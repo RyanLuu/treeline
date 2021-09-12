@@ -1,6 +1,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 
 #include <functional>
 #include <string>
@@ -8,6 +9,7 @@
 #include "assets/assets.h"
 #include "assets/audio.h"
 #include "assets/chart.h"
+#include "assets/font.h"
 #include "assets/texture.h"
 #include "components/button.h"
 #include "components/render.h"
@@ -31,6 +33,7 @@ ECS g_ecs;
 EventManager g_eventManager;
 Assets<Texture> g_textures;
 Assets<chart::Chart> g_charts;
+Assets<Font> g_fonts;
 Assets<Audio> g_audio;
 Keyboard g_keyboard;
 uint64_t updateTime;
@@ -63,6 +66,10 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     LOG_INFO("SDL successfully initialized!");
+    if (TTF_Init() != 0) {
+        LOG_ERROR("TTF_Init: %s\n", TTF_GetError());
+        exit(1);
+    }
 
     // SET UP WINDOW //
     SDL_Window *g_window = SDL_CreateWindow("treeline", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 750, 500, 0);
@@ -76,34 +83,25 @@ int main(int argc, char *argv[]) {
     // LOAD TEXTURES //
     AssetId g_targetTexture = g_textures.load("target.png");
 
-    // REGISTER COMPONENTS //
-    g_ecs.registerComponent<CSprite>();
-    g_ecs.registerComponent<CTranslation>();
-    g_ecs.registerComponent<CVelocity>();
-    g_ecs.registerComponent<CButton>();
-    g_ecs.registerComponent<CTargetTag>();
+    Archetype velocityArch = g_ecs.createArchetype(g_ecs.getComponentId<CVelocity>(),
+                                                   g_ecs.getComponentId<CTranslation>());
+    std::shared_ptr<VelocitySystem> velocitySystem = g_ecs.registerSystem<VelocitySystem>(velocityArch);
 
-    Archetype velocityArch =
-        g_ecs.createArchetype(g_ecs.getComponentId<CVelocity>(),
-                              g_ecs.getComponentId<CTranslation>());
-    std::shared_ptr<VelocitySystem> velocitySystem =
-        g_ecs.registerSystem<VelocitySystem>(velocityArch);
+    Archetype buttonArch = g_ecs.createArchetype(g_ecs.getComponentId<CRender>(),
+                                                 g_ecs.getComponentId<CSprite>(),
+                                                 g_ecs.getComponentId<CButton>());
+    std::shared_ptr<ButtonSystem> buttonSystem = g_ecs.registerSystem<ButtonSystem>(buttonArch);
 
-    Archetype buttonArch = g_ecs.createArchetype(
-        g_ecs.getComponentId<CSprite>(), g_ecs.getComponentId<CButton>());
-    std::shared_ptr<ButtonSystem> buttonSystem =
-        g_ecs.registerSystem<ButtonSystem>(buttonArch);
+    Archetype targetArch = g_ecs.createArchetype(g_ecs.getComponentId<CRender>(),
+                                                 g_ecs.getComponentId<CSprite>(),
+                                                 g_ecs.getComponentId<CTranslation>(),
+                                                 g_ecs.getComponentId<CVelocity>(),
+                                                 g_ecs.getComponentId<CTargetTag>());
+    std::shared_ptr<TargetSystem> targetSystem = g_ecs.registerSystem<TargetSystem>(targetArch);
 
-    Archetype targetArch = g_ecs.createArchetype(
-        g_ecs.getComponentId<CSprite>(), g_ecs.getComponentId<CTranslation>(),
-        g_ecs.getComponentId<CVelocity>(), g_ecs.getComponentId<CTargetTag>());
-    std::shared_ptr<TargetSystem> targetSystem =
-        g_ecs.registerSystem<TargetSystem>(targetArch);
-
-    Archetype renderArch = g_ecs.createArchetype(
-        g_ecs.getComponentId<CSprite>(), g_ecs.getComponentId<CTranslation>());
-    std::shared_ptr<RenderSystem> renderSystem =
-        g_ecs.registerRenderSystem<RenderSystem>(renderArch);
+    Archetype renderArch = g_ecs.createArchetype(g_ecs.getComponentId<CRender>(),
+                                                 g_ecs.getComponentId<CTranslation>());
+    std::shared_ptr<RenderSystem> renderSystem = g_ecs.registerRenderSystem<RenderSystem>(renderArch);
 
     AssetId baba = g_textures.load("baba.png");
     AssetId red = g_textures.load("red.png");
@@ -111,35 +109,20 @@ int main(int argc, char *argv[]) {
 
     AssetId chartId = g_charts.load("test.chart");
     AssetId songId = g_audio.load("music.mp3");
+    AssetId frutigerId = g_fonts.load("frutiger.ttf");
 
     Entity babaEntity = g_ecs.createEntity();
-    g_ecs.addComponents(babaEntity, CSprite{baba, 40, 40},
+    g_ecs.addComponents(babaEntity, CRender{1}, CSprite{baba, 40, 40},
                         CTranslation{30, 10}, CVelocity{50, 0});
 
-    Entity aEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(
-        aEntity, CSprite{grey, 50, 50}, CTranslation{100, 100},
-        CButton{Key::NOTE_A, red, grey});
-    Entity bEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(
-        bEntity, CSprite{grey, 50, 50}, CTranslation{200, 100},
-        CButton{Key::NOTE_B, red, grey});
-    Entity cEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(
-        cEntity, CSprite{grey, 50, 50}, CTranslation{300, 100},
-        CButton{Key::NOTE_C, red, grey});
-    Entity dEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(
-        dEntity, CSprite{grey, 50, 50}, CTranslation{400, 100},
-        CButton{Key::NOTE_D, red, grey});
-    Entity eEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(
-        eEntity, CSprite{grey, 50, 50}, CTranslation{500, 100},
-        CButton{Key::NOTE_E, red, grey});
-    Entity fEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(
-        fEntity, CSprite{grey, 50, 50}, CTranslation{600, 100},
-        CButton{Key::NOTE_F, red, grey});
+    Entity helloEntity = g_ecs.createEntity();
+    g_ecs.addComponents(helloEntity, CRender{4}, CText{frutigerId, SDL_Color{255, 255, 255, 127}, 0}, CTranslation{200, 120});
+
+    for (size_t i = 0; i < 6; i++) {
+        Entity buttonEntity = g_ecs.createEntity();
+        g_ecs.addComponents(buttonEntity, CRender{1}, CSprite{grey, 50, 50},
+                            CTranslation{100.f + 100 * i, 100}, CButton{static_cast<Key>(i), red, grey});
+    }
 
     std::function<void(void)> f = []() { g_fpsCounter.report(); };
     Timer fpsCounterTimer = Timer{f, 1'000'000};
@@ -173,7 +156,7 @@ int main(int argc, char *argv[]) {
                 float x = 100 + note.value * 100;
                 float y = 100 + speed * note.time / 1'000'000;
                 Entity newTarget = g_ecs.createEntity();
-                g_ecs.addComponents(newTarget, CSprite{g_targetTexture, 50, 50, 3}, CTranslation{x, y}, CVelocity{0, -speed}, CTargetTag{});
+                g_ecs.addComponents(newTarget, CRender{3}, CSprite{g_targetTexture, 50, 50}, CTranslation{x, y}, CVelocity{0, -speed}, CTargetTag{});
             }
         }
     });
@@ -218,9 +201,12 @@ int main(int argc, char *argv[]) {
     g_charts.unloadAll();
     g_textures.unloadAll();
     g_audio.unloadAll();
+    g_fonts.unloadAll();
 
     SDL_DestroyRenderer(g_renderer);
     SDL_DestroyWindow(g_window);
+    TTF_Quit();
+    SDL_Quit();
     return 0;
 }
 

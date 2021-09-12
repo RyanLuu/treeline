@@ -9,7 +9,7 @@
 #include "logging.h"
 
 class ECS {
- public:
+   public:
     ECS() {
         m_entityManager = std::make_unique<EntityManager>();
         m_componentManager = std::make_unique<ComponentManager>();
@@ -88,6 +88,11 @@ class ECS {
     }
 
     template <typename T>
+    bool hasComponent(Entity e) {
+        return m_componentManager->hasComponent<T>(e);
+    }
+
+    template <typename T>
     Component getComponentId() {
         return m_componentManager->getId<T>();
     }
@@ -128,7 +133,7 @@ class ECS {
         m_destroyList.clear();
     }
 
- private:
+   private:
     std::unique_ptr<EntityManager> m_entityManager;
     std::unique_ptr<ComponentManager> m_componentManager;
     std::unique_ptr<SystemManager> m_updateSystemManager;

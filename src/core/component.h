@@ -9,14 +9,14 @@
 using Component = std::uint8_t;
 
 class IComponentData {
- public:
+   public:
     virtual ~IComponentData() = default;
     virtual void notifyDestroyed(Entity e) = 0;
 };
 
 template <typename T>
 class ComponentData : public IComponentData {
- public:
+   public:
     void insert(Entity e, T component) {
         assert(m_entityToIndex.find(e) == m_entityToIndex.end());
         size_t index = m_size;
@@ -47,13 +47,17 @@ class ComponentData : public IComponentData {
         return m_data[m_entityToIndex[e]];
     }
 
+    bool has(Entity e) {
+        return m_entityToIndex.find(e) != m_entityToIndex.end();
+    }
+
     void notifyDestroyed(Entity e) override {
         if (m_entityToIndex.find(e) != m_entityToIndex.end()) {
             remove(e);
         }
     }
 
- private:
+   private:
     std::array<T, MAX_ENTITIES> m_data;
     std::unordered_map<Entity, size_t> m_entityToIndex;
     std::unordered_map<size_t, Entity> m_indexToEntity;
@@ -61,17 +65,7 @@ class ComponentData : public IComponentData {
 };
 
 class ComponentManager {
- public:
-    template <typename T>
-    void registerComponent() {
-        assert(m_numComponents < MAX_COMPONENTS);
-        std::size_t typeHash = typeid(T).hash_code();
-        assert(m_idMap.find(typeHash) == m_idMap.end());
-        m_idMap.insert({typeHash, m_numComponents});
-        m_dataMap.insert({typeHash, std::make_shared<ComponentData<T>>()});
-        m_numComponents++;
-    }
-
+   public:
     template <typename T>
     void addComponent(Entity e, T component) {
         getComponentData<T>()->insert(e, component);
@@ -88,9 +82,16 @@ class ComponentManager {
     }
 
     template <typename T>
+    bool hasComponent(Entity e) {
+        return getComponentData<T>()->has(e);
+    }
+
+    template <typename T>
     Component getId() {
         std::size_t typeHash = typeid(T).hash_code();
-        assert(m_idMap.find(typeHash) != m_idMap.end());  // Component is not registered
+        if (m_idMap.find(typeHash) == m_idMap.end()) {  // Component is not registered
+            registerComponent<T>();
+        }
         return m_idMap[typeHash];
     }
 
@@ -100,12 +101,24 @@ class ComponentManager {
         }
     }
 
- private:
+   private:
+    template <typename T>
+    void registerComponent() {
+        assert(m_numComponents < MAX_COMPONENTS);
+        std::size_t typeHash = typeid(T).hash_code();
+        assert(m_idMap.find(typeHash) == m_idMap.end());
+        m_idMap.insert({typeHash, m_numComponents});
+        m_dataMap.insert({typeHash, std::make_shared<ComponentData<T>>()});
+        m_numComponents++;
+    }
+
     template <typename T>
     std::shared_ptr<ComponentData<T>> getComponentData() {
-        std::size_t typeName = typeid(T).hash_code();
-        assert(m_idMap.find(typeName) != m_idMap.end());
-        return std::static_pointer_cast<ComponentData<T>>(m_dataMap[typeName]);
+        std::size_t typeHash = typeid(T).hash_code();
+        if (m_idMap.find(typeHash) == m_idMap.end()) {  // Component is not registered
+            registerComponent<T>();
+        }
+        return std::static_pointer_cast<ComponentData<T>>(m_dataMap[typeHash]);
     }
     std::unordered_map<std::size_t, std::shared_ptr<IComponentData>> m_dataMap;
     std::unordered_map<std::size_t, Component> m_idMap;
