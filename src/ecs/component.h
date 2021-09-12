@@ -46,6 +46,7 @@ class ComponentData : public IComponentData {
         assert(m_entityToIndex.find(e) != m_entityToIndex.end());
         return m_data[m_entityToIndex[e]];
     }
+
     void notifyDestroyed(Entity e) override {
         if (m_entityToIndex.find(e) != m_entityToIndex.end()) {
             remove(e);

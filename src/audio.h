@@ -8,10 +8,6 @@
 #include "src/logging.h"
 
 static constexpr char AudioRoot[] = "assets/audio/";
-static constexpr uint32_t Frequency = 44100;  // samples per second
-static constexpr uint16_t Format = AUDIO_S16SYS;
-static constexpr uint16_t Channels = 2;      // mono (1) or stereo (2)
-static constexpr uint16_t ChunkSize = 4096;  // bytes per sample
 
 struct UserData {
     ma_decoder decoder;

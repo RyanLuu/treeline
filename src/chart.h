@@ -88,7 +88,7 @@ class Chart : public Asset {
             float x = 100 + note.value * 100;
             float y = 100 + speed * note.time / 1'000'000;
             Entity newTarget = g_ecs.createEntity();
-            g_ecs.addComponents(newTarget, CSprite{g_targetTexture, 50, 50}, CTranslation{x, y}, CVelocity{0, -speed}, CTargetTag{});
+            g_ecs.addComponents(newTarget, CSprite{g_targetTexture, 50, 50, 3}, CTranslation{x, y}, CVelocity{0, -speed}, CTargetTag{});
         }
     }
 
