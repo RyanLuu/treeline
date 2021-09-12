@@ -4,8 +4,8 @@
 
 #include <optional>
 
-#include "src/logging.h"
-#include "src/timer.h"
+#include "core/logging.h"
+#include "core/timer.h"
 
 class FPSCounter {
  public:

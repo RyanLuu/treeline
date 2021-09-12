@@ -3,10 +3,10 @@
 #include <memory>
 #include <unordered_set>
 
-#include "src/ecs/component.h"
-#include "src/ecs/entity.h"
-#include "src/ecs/system.h"
-#include "src/logging.h"
+#include "core/component.h"
+#include "core/entity.h"
+#include "core/system.h"
+#include "logging.h"
 
 class ECS {
  public:

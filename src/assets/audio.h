@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include "src/assets.h"
+#include "assets/assets.h"
+#include "core/logging.h"
 #define MINIAUDIO_IMPLEMENTATION
-#include "src/lib/miniaudio.h"
-#include "src/logging.h"
+#include "lib/miniaudio.h"
 
 static constexpr char AudioRoot[] = "assets/audio/";
 

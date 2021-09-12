@@ -2,15 +2,15 @@
 
 #include <SDL.h>
 
-#include "src/assets.h"
-#include "src/components/render.h"
-#include "src/components/tags.h"
-#include "src/components/transform.h"
-#include "src/ecs/ecs.h"
-#include "src/texture.h"
+#include "assets/assets.h"
+#include "assets/texture.h"
+#include "components/render.h"
+#include "components/tags.h"
+#include "components/transform.h"
+#include "core/ecs.h"
 
 class TargetSystem : public System {
- public:
+   public:
     void update(uint64_t) override {
         /*
         if (rand() % 100 == 0) {

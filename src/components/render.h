@@ -2,7 +2,7 @@
 
 #include <optional>
 
-#include "src/assets.h"
+#include "assets/assets.h"
 
 static constexpr uint8_t RENDER_LAYERS = 4;
 

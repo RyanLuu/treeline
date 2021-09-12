@@ -5,7 +5,7 @@
 #include <bitset>
 #include <unordered_map>
 
-enum class Key : size_t {
+enum class Key : uint8_t {
     NOTE_A,
     NOTE_B,
     NOTE_C,
@@ -15,7 +15,8 @@ enum class Key : size_t {
     SELECT,
     EXIT,
     METRICS,
-    Count  // hack to get the number of keys
+    Count,  // hack to get the number of keys
+    INVALID = 0xFF
 };
 
 struct KeyEvent {
@@ -35,19 +36,23 @@ class Keyboard {
                      {SDLK_g, Key::SELECT},
                      {SDLK_ESCAPE, Key::EXIT},
                      {SDLK_F12, Key::METRICS}} {}
+
     bool get(Key key) {
         return m_keys.test(static_cast<size_t>(key));
     }
+
     void set(SDL_Keycode keycode, bool b) {
         if (has(keycode)) {
             m_keys.set(static_cast<size_t>(m_indexMap[keycode]), b);
         }
     }
+
     bool has(SDL_Keycode keycode) {
         return m_indexMap.find(keycode) != m_indexMap.end();
     }
+
     Key toKey(SDL_Keycode keycode) {
-        return m_indexMap[keycode];
+        return has(keycode) ? m_indexMap[keycode] : Key::INVALID;
     }
 
  private:

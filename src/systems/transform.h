@@ -1,7 +1,7 @@
 #pragma once
 
-#include "src/components/transform.h"
-#include "src/ecs/ecs.h"
+#include "components/transform.h"
+#include "core/ecs.h"
 
 class VelocitySystem : public System {
  public:

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "src/components/button.h"
-#include "src/components/render.h"
-#include "src/ecs/ecs.h"
-#include "src/keyboard.h"
+#include "components/button.h"
+#include "components/render.h"
+#include "core/ecs.h"
+#include "io/keyboard.h"
 
 class ButtonSystem : public System {
  public:

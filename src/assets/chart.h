@@ -10,13 +10,13 @@
 #include <string>
 #include <vector>
 
-#include "src/assets.h"
-#include "src/components/render.h"
-#include "src/components/tags.h"
-#include "src/components/transform.h"
-#include "src/ecs/ecs.h"
-#include "src/logging.h"
-#include "src/texture.h"
+#include "assets/assets.h"
+#include "assets/texture.h"
+#include "components/render.h"
+#include "components/tags.h"
+#include "components/transform.h"
+#include "core/ecs.h"
+#include "core/logging.h"
 
 namespace chart {
 
@@ -82,14 +82,8 @@ class Chart : public Asset {
         stream.close();
     }
 
-    void play() {
-        for (Note note : m_notes) {
-            float speed = 300;
-            float x = 100 + note.value * 100;
-            float y = 100 + speed * note.time / 1'000'000;
-            Entity newTarget = g_ecs.createEntity();
-            g_ecs.addComponents(newTarget, CSprite{g_targetTexture, 50, 50, 3}, CTranslation{x, y}, CVelocity{0, -speed}, CTargetTag{});
-        }
+    std::vector<Note> getNotes() {
+        return m_notes;
     }
 
     void unload() override {}

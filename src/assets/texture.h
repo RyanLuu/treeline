@@ -5,14 +5,14 @@
 
 #include <string>
 
-#include "src/assets.h"
-#include "src/logging.h"
-#include "src/renderer.h"
+#include "assets/assets.h"
+#include "core/logging.h"
+#include "io/renderer.h"
 
 static constexpr char ImageRoot[] = "assets/images/";
 
 class Texture : public Asset {
- public:
+   public:
     void load(const std::string &filepath) override {
         m_img = IMG_LoadTexture(g_renderer, (ImageRoot + filepath).c_str());
         assert(m_img != nullptr);
@@ -30,6 +30,4 @@ class Texture : public Asset {
 };
 
 extern Assets<Texture> g_textures;
-
-AssetId g_targetTexture;
 

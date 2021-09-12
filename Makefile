@@ -1,12 +1,13 @@
 CC=clang++
-CFLAGS=-c -std=c++17 -Wall -Werror -MD -I/usr/local/include/SDL2 -I.
+CFLAGS=-c -std=c++17 -Wall -Werror -MD -I/usr/local/include/SDL2 -Isrc -ferror-limit=0
 LDFLAGS=-lSDL2 -lSDL2_image -lSDL2_ttf
 SRC=src
 BIN=bin
 OBJ=$(BIN)/obj
 TARGET=treeline
 
-SRCS=$(wildcard $(SRC)/*.cpp)
+rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
+SRCS=$(call rwildcard,$(SRC),*.cpp)
 OBJS=$(SRCS:$(SRC)/%.cpp=$(OBJ)/%.o)
 BINS=$(TARGET:%=$(BIN)/%)
 

@@ -4,7 +4,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "./entity.h"
+#include "core/entity.h"
 
 using Component = std::uint8_t;
 

@@ -4,12 +4,12 @@
 #include <memory>
 #include <unordered_set>
 
-#include "src/assets.h"
-#include "src/components/render.h"
-#include "src/components/transform.h"
-#include "src/ecs/ecs.h"
-#include "src/renderer.h"
-#include "src/texture.h"
+#include "assets/assets.h"
+#include "components/render.h"
+#include "components/transform.h"
+#include "core/ecs.h"
+#include "io/renderer.h"
+#include "assets/texture.h"
 
 class RenderSystem : public System {
  public:

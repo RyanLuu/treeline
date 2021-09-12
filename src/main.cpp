@@ -5,25 +5,25 @@
 #include <functional>
 #include <string>
 
-#include "ecs/ecs.h"
-#include "src/assets.h"
-#include "src/audio.h"
-#include "src/chart.h"
-#include "src/components/button.h"
-#include "src/components/render.h"
-#include "src/components/tags.h"
-#include "src/components/transform.h"
-#include "src/event.h"
-#include "src/fps.h"
-#include "src/keyboard.h"
-#include "src/logging.h"
-#include "src/renderer.h"
-#include "src/systems/button.h"
-#include "src/systems/render.h"
-#include "src/systems/target.h"
-#include "src/systems/transform.h"
-#include "src/texture.h"
-#include "src/timer.h"
+#include "assets/assets.h"
+#include "assets/audio.h"
+#include "assets/chart.h"
+#include "assets/texture.h"
+#include "components/button.h"
+#include "components/render.h"
+#include "components/tags.h"
+#include "components/transform.h"
+#include "core/ecs.h"
+#include "core/event.h"
+#include "core/fps.h"
+#include "core/logging.h"
+#include "core/timer.h"
+#include "io/keyboard.h"
+#include "io/renderer.h"
+#include "systems/button.h"
+#include "systems/render.h"
+#include "systems/target.h"
+#include "systems/transform.h"
 
 constexpr bool VSYNC_ENABLE = true;
 SDL_Renderer *g_renderer;
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     }
 
     // LOAD TEXTURES //
-    g_targetTexture = g_textures.load("target.png");
+    AssetId g_targetTexture = g_textures.load("target.png");
 
     // REGISTER COMPONENTS //
     g_ecs.registerComponent<CSprite>();
@@ -116,22 +116,30 @@ int main(int argc, char *argv[]) {
     g_ecs.addComponents(babaEntity, CSprite{baba, 40, 40},
                         CTranslation{30, 10}, CVelocity{50, 0});
 
+    Entity aEntity = g_ecs.createEntity();
+    g_ecs.addComponents<CSprite, CTranslation, CButton>(
+        aEntity, CSprite{grey, 50, 50}, CTranslation{100, 100},
+        CButton{Key::NOTE_A, red, grey});
+    Entity bEntity = g_ecs.createEntity();
+    g_ecs.addComponents<CSprite, CTranslation, CButton>(
+        bEntity, CSprite{grey, 50, 50}, CTranslation{200, 100},
+        CButton{Key::NOTE_B, red, grey});
+    Entity cEntity = g_ecs.createEntity();
+    g_ecs.addComponents<CSprite, CTranslation, CButton>(
+        cEntity, CSprite{grey, 50, 50}, CTranslation{300, 100},
+        CButton{Key::NOTE_C, red, grey});
     Entity dEntity = g_ecs.createEntity();
     g_ecs.addComponents<CSprite, CTranslation, CButton>(
-        dEntity, CSprite{grey, 50, 50}, CTranslation{100, 100},
-        CButton{Key::NOTE_A, red, grey});
+        dEntity, CSprite{grey, 50, 50}, CTranslation{400, 100},
+        CButton{Key::NOTE_D, red, grey});
+    Entity eEntity = g_ecs.createEntity();
+    g_ecs.addComponents<CSprite, CTranslation, CButton>(
+        eEntity, CSprite{grey, 50, 50}, CTranslation{500, 100},
+        CButton{Key::NOTE_E, red, grey});
     Entity fEntity = g_ecs.createEntity();
     g_ecs.addComponents<CSprite, CTranslation, CButton>(
-        fEntity, CSprite{grey, 50, 50}, CTranslation{200, 100},
-        CButton{Key::NOTE_B, red, grey});
-    Entity jEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(
-        jEntity, CSprite{grey, 50, 50}, CTranslation{300, 100},
-        CButton{Key::NOTE_C, red, grey});
-    Entity kEntity = g_ecs.createEntity();
-    g_ecs.addComponents<CSprite, CTranslation, CButton>(
-        kEntity, CSprite{grey, 50, 50}, CTranslation{400, 100},
-        CButton{Key::NOTE_D, red, grey});
+        fEntity, CSprite{grey, 50, 50}, CTranslation{600, 100},
+        CButton{Key::NOTE_F, red, grey});
 
     std::function<void(void)> f = []() { g_fpsCounter.report(); };
     Timer fpsCounterTimer = Timer{f, 1'000'000};
@@ -155,11 +163,18 @@ int main(int argc, char *argv[]) {
     });
 
     // PLAY SONG EVENT LISTENER //
-    g_eventManager.addListener(EventType::KEYBOARD, [songId, chartId](const Event &event) {
+    g_eventManager.addListener(EventType::KEYBOARD, [g_targetTexture, songId, chartId](const Event &event) {
         if (event.getParam<Key>("key") == Key::SELECT &&
             event.getParam<bool>("down") == false) {
             g_audio.get(songId)->toggle();
-            g_charts.get(chartId)->play();
+            auto notes = g_charts.get(chartId)->getNotes();
+            for (auto note : notes) {
+                float speed = 300;
+                float x = 100 + note.value * 100;
+                float y = 100 + speed * note.time / 1'000'000;
+                Entity newTarget = g_ecs.createEntity();
+                g_ecs.addComponents(newTarget, CSprite{g_targetTexture, 50, 50, 3}, CTranslation{x, y}, CVelocity{0, -speed}, CTargetTag{});
+            }
         }
     });
 

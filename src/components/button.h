@@ -1,7 +1,7 @@
 #pragma once
 
-#include "src/assets.h"
-#include "src/keyboard.h"
+#include "assets/assets.h"
+#include "io/keyboard.h"
 
 struct CButton {
     Key key;
