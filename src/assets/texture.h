@@ -9,6 +9,8 @@
 #include "core/logging.h"
 #include "io/renderer.h"
 
+namespace assets {
+
 static constexpr char ImageRoot[] = "assets/images/";
 
 class Texture : public Asset {
@@ -30,4 +32,6 @@ class Texture : public Asset {
 };
 
 extern Assets<Texture> g_textures;
+
+}  // namespace assets
 

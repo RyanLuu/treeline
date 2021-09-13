@@ -6,7 +6,6 @@
 #include <functional>
 #include <string>
 
-#include "assets/assets.h"
 #include "assets/audio.h"
 #include "assets/chart.h"
 #include "assets/font.h"
@@ -31,10 +30,6 @@ constexpr bool VSYNC_ENABLE = true;
 SDL_Renderer *g_renderer;
 ECS g_ecs;
 EventManager g_eventManager;
-Assets<Texture> g_textures;
-Assets<chart::Chart> g_charts;
-Assets<Font> g_fonts;
-Assets<Audio> g_audio;
 Keyboard g_keyboard;
 uint64_t updateTime;
 
@@ -81,7 +76,7 @@ int main(int argc, char *argv[]) {
     }
 
     // LOAD TEXTURES //
-    AssetId g_targetTexture = g_textures.load("target.png");
+    assets::AssetId g_targetTexture = assets::g_textures.load("target.png");
 
     Archetype velocityArch = g_ecs.createArchetype(g_ecs.getComponentId<CVelocity>(),
                                                    g_ecs.getComponentId<CTranslation>());
@@ -103,13 +98,13 @@ int main(int argc, char *argv[]) {
                                                  g_ecs.getComponentId<CTranslation>());
     std::shared_ptr<RenderSystem> renderSystem = g_ecs.registerRenderSystem<RenderSystem>(renderArch);
 
-    AssetId baba = g_textures.load("baba.png");
-    AssetId red = g_textures.load("red.png");
-    AssetId grey = g_textures.load("grey.png");
+    assets::AssetId baba = assets::g_textures.load("baba.png");
+    assets::AssetId red = assets::g_textures.load("red.png");
+    assets::AssetId grey = assets::g_textures.load("grey.png");
 
-    AssetId chartId = g_charts.load("test.chart");
-    AssetId songId = g_audio.load("music.mp3");
-    AssetId frutigerId = g_fonts.load("frutiger.ttf");
+    assets::AssetId chartId = assets::g_charts.load("test.chart");
+    assets::AssetId songId = assets::g_audio.load("music.mp3");
+    assets::AssetId frutigerId = assets::g_fonts.load("frutiger.ttf");
 
     Entity babaEntity = g_ecs.createEntity();
     g_ecs.addComponents(babaEntity, CRender{1}, CSprite{baba, 40, 40},
@@ -149,8 +144,8 @@ int main(int argc, char *argv[]) {
     g_eventManager.addListener(EventType::KEYBOARD, [g_targetTexture, songId, chartId](const Event &event) {
         if (event.getParam<Key>("key") == Key::SELECT &&
             event.getParam<bool>("down") == false) {
-            g_audio.get(songId)->toggle();
-            auto notes = g_charts.get(chartId)->getNotes();
+            assets::g_audio.get(songId)->toggle();
+            auto notes = assets::g_charts.get(chartId)->getNotes();
             for (auto note : notes) {
                 float speed = 300;
                 float x = 100 + note.value * 100;
@@ -198,10 +193,10 @@ int main(int argc, char *argv[]) {
     }
     renderTimer.stop();
 
-    g_charts.unloadAll();
-    g_textures.unloadAll();
-    g_audio.unloadAll();
-    g_fonts.unloadAll();
+    assets::g_charts.unloadAll();
+    assets::g_textures.unloadAll();
+    assets::g_audio.unloadAll();
+    assets::g_fonts.unloadAll();
 
     SDL_DestroyRenderer(g_renderer);
     SDL_DestroyWindow(g_window);

@@ -29,7 +29,7 @@ class RenderSystem : public System {
                 CTranslation &translation = g_ecs.getComponent<CTranslation>(entity);
                 if (g_ecs.hasComponent<CSprite>(entity)) {
                     CSprite &sprite = g_ecs.getComponent<CSprite>(entity);
-                    std::shared_ptr<Texture> t = g_textures.get(sprite.textureId);
+                    std::shared_ptr<assets::Texture> t = assets::g_textures.get(sprite.textureId);
                     SDL_Rect rect;
                     rect.x = static_cast<int>(translation.x);
                     rect.y = static_cast<int>(translation.y);
@@ -39,8 +39,8 @@ class RenderSystem : public System {
                 }
                 if (g_ecs.hasComponent<CText>(entity)) {
                     CText &text = g_ecs.getComponent<CText>(entity);
-                    std::shared_ptr<Font> font = g_fonts.get(text.fontId);
-                    SDL_Surface *surface = TTF_RenderText_Solid(font->m_ttf, TEXT_POOL[text.text], text.color);
+                    std::shared_ptr<assets::Font> font = assets::g_fonts.get(text.fontId);
+                    SDL_Surface *surface = TTF_RenderText_Blended(font->m_ttf, TEXT_POOL[text.text], text.color);
                     SDL_Texture *texture = SDL_CreateTextureFromSurface(g_renderer, surface);
                     SDL_Rect rect;
                     rect.x = static_cast<int>(translation.x);

@@ -5,7 +5,7 @@
 
 struct CButton {
     Key key;
-    AssetId activeSprite;
-    AssetId idleSprite;
+    assets::AssetId activeSprite;
+    assets::AssetId idleSprite;
 };
 

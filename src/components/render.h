@@ -14,13 +14,13 @@ struct CRender {
 };
 
 struct CSprite {
-    AssetId textureId;
+    assets::AssetId textureId;
     std::optional<unsigned int> width;
     std::optional<unsigned int> height;
 };
 
 struct CText {
-    AssetId fontId;
+    assets::AssetId fontId;
     SDL_Color color;
     size_t text;
 };
