@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 rm -rf src/lib/*
-
-git clone -b dev-0.11 https://github.com/mackron/miniaudio.git src/lib/miniaudio
+mkdir -pv src/lib/miniaudio/research
+curl https://raw.githubusercontent.com/mackron/miniaudio/dev-0.11/research/miniaudio_engine.h > src/lib/miniaudio/research/miniaudio_engine.h
+curl https://raw.githubusercontent.com/mackron/miniaudio/dev-0.11/miniaudio.h > src/lib/miniaudio/miniaudio.h
 
 sdl_deps=(SDL SDL_image SDL_ttf)
 for dep in "${sdl_deps[@]}"; do

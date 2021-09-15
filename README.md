@@ -2,11 +2,23 @@
 
 ## Getting Started
 
-Download and install
-[SDL2](https://www.libsdl.org/download-2.0.php),
-[SDL2\_image](https://www.libsdl.org/projects/SDL_image/),
-[SDL2\_mixer](https://www.libsdl.org/projects/SDL_mixer/), and
-[SDL2\_ttf](https://www.libsdl.org/projects/SDL_ttf/).
+Install dependencies
+
+```
+./install_deps
+```
+
+Build
+
+```
+make
+```
+
+Execute
+
+```
+bin/treeline
+```
 
 ## Design
 
