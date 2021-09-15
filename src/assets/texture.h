@@ -15,16 +15,8 @@ static constexpr char ImageRoot[] = "assets/images/";
 
 class Texture : public Asset {
    public:
-    void load(const std::string &filepath) override {
-        m_img = IMG_LoadTexture(g_renderer, (ImageRoot + filepath).c_str());
-        assert(m_img != nullptr);
-        SDL_QueryTexture(m_img, nullptr, nullptr, &m_w, &m_h);
-        LOG_INFO("Loaded texture [%s]", filepath.c_str());
-    }
-
-    void unload() override {
-        SDL_DestroyTexture(m_img);
-    }
+    void load(const std::string &filepath) override;
+    void unload() override;
 
     SDL_Texture *m_img;
     int m_w;

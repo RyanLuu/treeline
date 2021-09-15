@@ -75,6 +75,9 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    // ENABLE AUDIO
+    assets::Audio::enable();
+
     // LOAD TEXTURES //
     assets::AssetId g_targetTexture = assets::g_textures.load("target.png");
 
@@ -144,12 +147,14 @@ int main(int argc, char *argv[]) {
     g_eventManager.addListener(EventType::KEYBOARD, [g_targetTexture, songId, chartId](const Event &event) {
         if (event.getParam<Key>("key") == Key::SELECT &&
             event.getParam<bool>("down") == false) {
-            assets::g_audio.get(songId)->toggle();
+            assets::g_audio.get(songId)->toggle(1000);
+            LOG_INFO("%lu", assets::g_audio.get(songId)->cursor());
             auto notes = assets::g_charts.get(chartId)->getNotes();
             for (auto note : notes) {
+                int delay = 1'000'000;
                 float speed = 300;
                 float x = 100 + note.value * 100;
-                float y = 100 + speed * note.time / 1'000'000;
+                float y = 100 + speed * (note.time + delay) / 1'000'000;
                 Entity newTarget = g_ecs.createEntity();
                 g_ecs.addComponents(newTarget, CRender{3}, CSprite{g_targetTexture, 50, 50}, CTranslation{x, y}, CVelocity{0, -speed}, CTargetTag{});
             }
@@ -197,6 +202,8 @@ int main(int argc, char *argv[]) {
     assets::g_textures.unloadAll();
     assets::g_audio.unloadAll();
     assets::g_fonts.unloadAll();
+
+    assets::Audio::disable();
 
     SDL_DestroyRenderer(g_renderer);
     SDL_DestroyWindow(g_window);

@@ -26,11 +26,11 @@ Download and install
 - [x] detect keypress
 - [ ] compare keypress timing to chart
 - [x] rendering notes
-- [ ] render order
+- [x] render order
 - [x] determine chart file format
 - [ ] chart editor/MIDI converter
 - [x] load a chart
-- [ ] start a chart
+- [x] start a chart
 - [x] play a song
 - [ ] pause song/chart
 - [ ] restart

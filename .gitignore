@@ -39,3 +39,6 @@ compile_commands.json
 
 # Libraries (built from source)
 src/lib/
+
+# Swap files
+*.swp

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 struct CTranslation {
     float x;  // pixels
     float y;  // pixels
